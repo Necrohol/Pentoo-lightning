@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+  <maintainer type="person">
+    <email>pentoo@pentoo.ch</email>
+    <name>Pentoo Project</name>
+  </maintainer>
+  <longdescription>
+    Animated Plymouth boot splash theme for Pentoo Linux.
+    Reaper Tux mascot centered on 1920x1080 frame with animated binary
+    matrix rain side panels, growing teal/cyan lightning bolt progress
+    bar, scythe glow pulse, and www.pentoo.ch footer.
+    120 frames at 24fps, 5 seconds. Generated via tux_compositor.py
+    from a single static illustration.
+  </longdescription>
+  <use>
+    <flag name="dracut">Pull in dracut or dracut-ng for initramfs rebuild</flag>
+  </use>
+</pkgmetadata>

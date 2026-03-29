@@ -1,0 +1,8 @@
+# /etc/plymouth/plymouthd.conf
+# Pentoo Lightning theme — example config
+# Or use: plymouth-set-default-theme -R pentoo
+
+[Daemon]
+Theme=pentoo
+FallbackTheme=text
+ShowDelay=0

@@ -1,0 +1,25 @@
+// Pentoo Plymouth Script — Reaper Tux Lightning Theme
+// 120 frames @ 24fps, 5s, 1920x1080
+
+screen_width  = Window.GetWidth();
+screen_height = Window.GetHeight();
+frame_count   = 120;
+
+for (i = 1; i <= frame_count; i++) {
+    frames[i] = Image("frame" + String.Format("%04d", i) + ".png");
+}
+
+sprite = Sprite();
+sprite.SetX(0);
+sprite.SetY(0);
+sprite.SetOpacity(1);
+
+fun refresh_callback() {
+    progress = Plymouth.GetBootProgress();
+    frame    = Math.Int(progress * (frame_count - 1)) + 1;
+    if (frame < 1)           frame = 1;
+    if (frame > frame_count) frame = frame_count;
+    sprite.SetImage(frames[frame]);
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);

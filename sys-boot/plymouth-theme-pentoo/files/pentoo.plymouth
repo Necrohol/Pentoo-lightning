@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Pentoo
+Description=Pentoo Linux boot splash — Reaper Tux with teal lightning bar and matrix rain
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/pentoo
+ScriptFile=/usr/share/plymouth/themes/pentoo/plymouth.script
