@@ -1,40 +1,124 @@
-# Copyright 2024 Pentoo Project / LWIS LLC
+# Copyright 2024 Pentoo Necrohol Project
 # Distributed under the terms of the GNU General Public License v2
 # Documentation and metadata: CC BY-SA 4.0
 
 EAPI=8
-
 inherit git-r3
-
-DESCRIPTION="Pentoo Plymouth boot splash — Reaper Tux lightning theme with matrix rain"
-HOMEPAGE="https://github.com/Necrohol/Pentoo-lightning"
-EGIT_REPO_URI="https://github.com/Necrohol/Pentoo-lightning.git"
-EGIT_BRANCH="master"
-#archive/v${PV}.tar.gz -> ${P}.tar.gz"
-EAPI=8
 RESTRICT="strip"
-LICENSE="GPL-2 Artistic-2 CC-BY-SA-4.0"
 
+DESCRIPTION="Pentoo Plymouth boot splash — Reaper Tux Lightning theme with matrix rain"
+HOMEPAGE="https://github.com/Necrohol/Pentoo-lightning"
+LICENSE="GPL-2 Artistic-2 CC-BY-SA-4.0"
 SLOT="0"
 KEYWORDS=""
-IUSE="dracut genkernel ugrd"
+IUSE="dracut genkernel ugrd tools"
 
-REQUIRED_USE="?? ( dracut genkernel ugrd )"
+# -----------------------
+# Source URI / live ebuild
+# -----------------------
+if [[ "${PV}" == "9999" ]]; then
+    EGIT_REPO_URI="https://github.com/Necrohol/Pentoo-lightning.git"
+    EGIT_BRANCH="master"
+else
+    SRC_URI="https://github.com/Necrohol/Pentoo-lightning/archive/v${PV}.tar.gz -> ${P}.tar.gz"
+fi
+
+# -----------------------
 # Core dependencies
-# sys-boot/plymouth is required to actually USE the theme.
+# -----------------------
 RDEPEND="
-	sys-boot/plymouth
-	dracut? (
-		|| (
-			sys-kernel/dracut-ng
-			sys-kernel/dracut
-		)
-	)
-	ugrd? ( sys-kernel/ugrd )
-	genkernel? ( sys-kernel/genkernel )
+    sys-boot/plymouth
+    dracut? ( || ( sys-kernel/dracut-ng sys-kernel/dracut ) )
+    genkernel? ( sys-kernel/genkernel )
+    ugrd? ( sys-kernel/ugrd )
 "
 
-# BDEPEND is for the tools you use to build/fix the theme (like Pillow)
+# -----------------------
+# Build-time tools
+# -----------------------
+BDEPEND="
+    tools? (
+        ${PYTHON_DEPS}
+        $(python_gen_cond_dep '
+            dev-python/pillow[${PYTHON_USEDEP}]
+            media-video/ffmpeg
+        ')
+    )
+"
+
+src_install() {
+    local theme_dir="/usr/share/plymouth/themes/pentoo"
+
+    # 1️⃣ THEME ASSETS
+    insinto "${theme_dir}"
+    doins -r "${S}"/plymouth/pentoo/.
+
+    # 2️⃣ CONFIGS
+    doins "${S}/plymouth/pentoo/pentoo.plymouth"
+    doins "${S}/plymouth/pentoo/plymouth.script"
+    if [[ -f "${S}/conf/plymouthd.conf.example" ]]; then
+        insinto /usr/share/doc/${PF}
+        doins "${S}/conf/plymouthd.conf.example"
+    fi
+
+    # 3️⃣ DOCUMENTATION & LICENSE
+    dodoc -r "${S}/docs"
+    insinto /usr/share/doc/${PF}
+    doins "${S}/LICENSE"
+
+    # 4️⃣ TOOLS
+    exeinto "${theme_dir}/tools"
+    doexe "${S}"/tools/*.py
+
+    # 5️⃣ PREVIEW SYMLINKS (README consistency)
+    keepdir "${theme_dir}/sources/preview"
+    keepdir "${theme_dir}/sources"
+    if compgen -G "${S}/sources/*.mp4" > /dev/null; then
+        insinto "${theme_dir}/sources"
+        doins -r "${S}/sources/"*.mp4
+    fi
+
+    shopt -s nullglob
+    for f in "${ED}${theme_dir}"/*.png; do
+        local fname=$(basename "${f}")
+        dosym "../${fname}" "${theme_dir}/sources/preview/${fname}"
+    done
+    shopt -u nullglob
+}
+
+pkg_postinst() {
+    elog ""
+    elog "=== Pentoo Plymouth: Reaper Tux Lightning ==="
+    elog ""
+    elog "To set as default and rebuild initramfs in one step:"
+    elog "  plymouth-set-default-theme -R pentoo"
+    elog ""
+
+    if use dracut; then
+        elog "Note: dracut/dracut-ng will include this theme automatically"
+        elog "on your next kernel install if 'installkernel' is configured."
+    fi
+
+    elog "Ensure 'quiet splash' is in your GRUB_CMDLINE_LINUX_DEFAULT."
+    elog ""
+    elog "To test without rebooting:"
+    elog "  plymouthd --debug --attach-to-session; plymouth show-splash; sleep 5; plymouth quit"
+
+    if [[ -f /proc/cmdline ]] && ! grep -q "splash" /proc/cmdline; then
+        ewarn "WARNING: 'splash' missing from current boot cmdline!"
+    fi
+
+    # Optional spinner for 9999 live builds
+    if [[ "${PV}" == "9999" ]]; then
+        local spinner="/-\|"
+        local i=0
+        for _ in $(seq 1 10); do
+            printf "\r Installing: [%c] " "${spinner:i++%${#spinner}:1}"
+            sleep 0.2
+        done
+        printf "\rDone!                         \n"
+    fi
+}# BDEPEND is for the tools you use to build/fix the theme (like Pillow)
 BDEPEND="
 	${PYTHON_DEPS}
 	$(python_gen_cond_dep '
