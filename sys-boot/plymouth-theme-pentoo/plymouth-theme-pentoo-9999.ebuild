@@ -10,8 +10,11 @@ DESCRIPTION="Pentoo Plymouth boot splash — Reaper Tux lightning theme with mat
 HOMEPAGE="https://github.com/Necrohol/Pentoo-lightning"
 EGIT_REPO_URI="https://github.com/Necrohol/Pentoo-lightning.git"
 EGIT_BRANCH="master"
+#archive/v${PV}.tar.gz -> ${P}.tar.gz"
+EAPI=8
+RESTRICT="strip"
+LICENSE="GPL-2 Artistic-2 CC-BY-SA-4.0"
 
-LICENSE="CC-BY-SA-4.0"
 SLOT="0"
 KEYWORDS=""
 IUSE="dracut genkernel ugrd"
@@ -66,6 +69,21 @@ src_install() {
 
 	insinto /usr/share/doc/${PF}
 	doins "${FILESDIR}"/plymouthd.conf.example
+# Docs
+	dodoc -r docs/*
+     dodoc License docs
+insinto /usr/share/doc/${PF}
+doins "${S}/LICENSE"
+	# Preview symlink dir (for README consistency)
+	keepdir ${theme_dir}/sources/preview
+
+	shopt -s nullglob
+	for f in "${ED}${theme_dir}"/*.png; do
+		local fname=$(basename "${f}")
+		dosym "../${fname}" "${theme_dir}/sources/preview/${fname}"
+	done
+	shopt -u nullglob
+}
 }
 
 pkg_postinst() {
