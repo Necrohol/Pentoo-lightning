@@ -66,8 +66,6 @@ src_install() {
 src_install() {
 	insinto /usr/share/plymouth/themes/pentoo
 	doins -r "${S}"/plymouth/pentoo/.
-
-	insinto /usr/share/doc/${PF}
 	doins "${FILESDIR}"/plymouthd.conf.example
 # Docs
 	dodoc -r docs/*
@@ -84,7 +82,7 @@ doins "${S}/LICENSE"
 	done
 	shopt -u nullglob
 }
-}
+
 
 pkg_postinst() {
 	elog ""
